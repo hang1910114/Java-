@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.neu.api.mapper.ResourceMapper">
+
+
+    <resultMap id="resourceVOMap" type="com.neu.api.vo.ResourceVO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="resource_type_id" property="resourceTypeId"/>
+        <result column="url" property="url"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="t_name" property="resourceTypeName"/>
+<!--        <collection property="resourceVOList" ofType="com.neu.api.vo.ResourceVO" resultMap="resourceVOMap" >-->
+<!--            <result column="t_name" property="soutName"/>-->
+<!--        </collection>-->
+    </resultMap>
+
+<!--    <resultMap id="resourceVO1Map" type="com.neu.api.vo.ResourceVO1">-->
+<!--        <id column="id" property="id"/>-->
+<!--        <result column="url" property="data"/>-->
+<!--    </resultMap>>-->
+
+<!--    parameterType="resourceQuery"-->
+    <select id="find" resultMap="resourceVOMap">
+        SELECT
+        r.id,
+        r.name,
+        r.resource_type_id,
+        r.url,
+        r.description,
+        r.status,
+        t.name AS t_name
+        FROM
+        t_resource r
+        JOIN t_resource_type t ON r.resource_type_id = t.id
+        <where>
+            <if test="name !=null and name !=''">
+                and r.name like CONCAT('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+
+<!--   根据name和分类查询 parameterType="string"-->
+    <select id="findName" resultMap="resourceVOMap">
+        SELECT
+        r.id,
+        r.name,
+        r.resource_type_id,
+        r.url,
+        r.description,
+        r.status,
+        t.name AS t_name
+        FROM
+        t_resource r
+        JOIN t_resource_type t ON r.resource_type_id = t.id
+        where r.name=#{name} and t.resource_type_id=#{resourceTypeId}
+    </select>
+
+
+    <update id="update" parameterType="resourceDetail">
+        update t_resource
+        <set>
+            <if test="name !=null and name !=''">
+                name = #{name},
+            </if>
+            <if test="url !=null">
+                url = #{url},
+            </if>
+            <if test="description !=null">
+                description = #{description},
+            </if>
+            <if test="status !=null">
+                status = #{status}
+            </if>
+            <if test="soutName !=null and soutName !=''">
+                soutName = #{soutName},
+            </if>
+        </set>
+        where resource_type_id = #{resourceTypeId} and name=#{name}
+    </update>
+
+    <insert id="add" parameterType="resourceVO">
+
+        insert into t_resource(
+        name
+        ,resource_type_id
+        ,url
+        ,description
+        ,status
+        )values(
+        #{name}
+        ,(select id from t_resource_type where name = #{resourceTypeName})
+        ,#{url}
+        ,#{description}
+        ,#{status}
+        )
+    </insert>
+</mapper>
